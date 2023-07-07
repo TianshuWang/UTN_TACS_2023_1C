@@ -1,0 +1,16 @@
+application:
+  security:
+    jwt:
+      expiration: 86400000
+      refresh-token:
+        expiration: 86400000
+      secret-key: ${SECRET_KEY}
+server:
+  port: 8091
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      auto-index-creation: true
+monitor:
+  time-range: ${MONITOR_TIME_RANGE}

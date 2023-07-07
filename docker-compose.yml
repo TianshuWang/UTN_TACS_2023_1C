@@ -1,0 +1,85 @@
+version: "3.9"
+x-common: &common
+  restart: unless-stopped
+  tty: true
+services:
+  mongo:
+    <<: *common
+    container_name: mongodb
+    image: mongo
+    command: [--auth]
+    environment:
+      MONGO_INITDB_DATABASE: TP
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - "27017:27017"
+    networks:
+      tp_network:
+        aliases:
+          - mongo
+        ipv4_address: 172.255.254.103
+    volumes:
+      - ./docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d
+      - $PWD/.data/mongodb:/data/db:delegated
+
+  backend:
+    <<: *common
+    build: ./backend
+    image: backend:latest
+    environment:
+      MONGODB_URI: mongodb://tacs:tacs@mongo:27017/TP?serverSelectionTimeoutMS=5000&connectTimeoutMS=5000
+      SECRET_KEY: 404E635266556A586E3153257538782F413F4426572B4B6250645368970B5970
+      MONITOR_TIME_RANGE: 2
+    links:
+        - mongo
+    ports:
+      - "8091:8091"
+      - "8092:8092"
+    networks:
+      tp_network:
+        aliases:
+          - backend
+        ipv4_address: 172.255.254.104
+    depends_on:
+      - mongo
+    volumes:
+      - $PWD/.data/backend:/data/db:delegated
+
+  frontend:
+    <<: *common
+    build: ./frontend
+    image: frontend:latest
+    ports:
+      - "3000:3000"
+    networks:
+      tp_network:
+        aliases:
+          - frontend
+        ipv4_address: 172.255.254.105
+  
+  bot:
+   <<: *common
+   build: ./bot
+   image: bot:latest
+   environment:
+     USERNAME: TacsGrupo1Bot
+     BOT_TOKEN: 6140245411:AAFQxFxXt1DZdFdTzCK5tB794imIiElBg6E
+     SCHEME_DOMAIN: http://backend:8091
+   ports:
+     - "8443:8443"
+   networks:
+     tp_network:
+       aliases:
+         - bot
+       ipv4_address: 172.255.254.106
+
+networks:
+  tp_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.255.254.0/24
+  backend:
+    driver: bridge
