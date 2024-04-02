@@ -16,9 +16,44 @@
         "version": "1.0"
     },
     "host": "localhost:8080",
-    "basePath": "/v1",
     "paths": {
-        "/auth/register": {
+        "/v1/auth/login": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "Login a user",
+                "parameters": [
+                    {
+                        "description": "request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/v1/auth/register": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -32,8 +67,8 @@
                 "summary": "Register a user",
                 "parameters": [
                     {
-                        "description": "Register user",
-                        "name": "register",
+                        "description": "request body",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -42,9 +77,6 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
                     "400": {
                         "description": "Bad Request"
                     },
@@ -61,6 +93,10 @@
     "definitions": {
         "domain.User": {
             "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
             "properties": {
                 "firstName": {
                     "type": "string"

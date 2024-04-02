@@ -12,6 +12,7 @@ import (
 var (
 	onceRepo     sync.Once
 	repoInstance *MongoRepository
+	ctx          = context.Background()
 )
 
 type MongoRepository struct {
@@ -32,6 +33,58 @@ func NewMongoRepository(uri string) *MongoRepository {
 	return repoInstance
 }
 
+func (m *MongoRepository) Create(collectionName string, model interface{}) error {
+	collection := m.MongoDb.Collection(collectionName)
+
+	_, err := collection.InsertOne(ctx, model)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MongoRepository) SaveAll(collectionName string, models []interface{}) error {
+	collection := m.MongoDb.Collection(collectionName)
+
+	_, err := collection.InsertMany(ctx, models)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MongoRepository) Find(collectionName string, filter interface{}, result interface{}) error {
+	collection := m.MongoDb.Collection(collectionName)
+
+	err := collection.FindOne(ctx, filter).Decode(result)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MongoRepository) Update(collectionName string, filter interface{}, update interface{}) error {
+	collection := m.MongoDb.Collection(collectionName)
+
+	_, err := collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MongoRepository) Delete(collectionName string, filter interface{}) error {
+	collection := m.MongoDb.Collection(collectionName)
+	_, err := collection.DeleteOne(ctx, filter)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func getConnection(uri string) (*mongo.Client, error) {
 	clientOptions := options.Client().ApplyURI(uri)
 	client, err := mongo.Connect(context.Background(), clientOptions)
@@ -47,46 +100,4 @@ func getConnection(uri string) (*mongo.Client, error) {
 
 	fmt.Println("Successfully connected to MongoDB")
 	return client, nil
-}
-
-func (m *MongoRepository) Create(ctx context.Context, collectionName string, model interface{}) (*mongo.InsertOneResult, error) {
-	collection := m.MongoDb.Collection(collectionName)
-
-	res, err := collection.InsertOne(ctx, model)
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
-}
-
-func (m *MongoRepository) Read(ctx context.Context, collectionName string, filter interface{}, result interface{}) error {
-	collection := m.MongoDb.Collection(collectionName)
-
-	err := collection.FindOne(ctx, filter).Decode(result)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *MongoRepository) Update(ctx context.Context, collectionName string, filter interface{}, update interface{}) error {
-	collection := m.MongoDb.Collection(collectionName)
-
-	_, err := collection.UpdateOne(ctx, filter, update)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *MongoRepository) Delete(ctx context.Context, collectionName string, filter interface{}) error {
-	collection := m.MongoDb.Collection(collectionName)
-	_, err := collection.DeleteOne(ctx, filter)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

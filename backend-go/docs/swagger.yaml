@@ -1,4 +1,3 @@
-basePath: /v1
 definitions:
   domain.User:
     properties:
@@ -12,6 +11,9 @@ definitions:
         type: string
       username:
         type: string
+    required:
+    - password
+    - username
     type: object
 externalDocs:
   description: OpenAPI
@@ -30,22 +32,43 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
-  /auth/register:
+  /v1/auth/login:
     post:
       consumes:
       - application/json
       parameters:
-      - description: Register user
+      - description: request body
         in: body
-        name: register
+        name: request
         required: true
         schema:
           $ref: '#/definitions/domain.User'
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Login a user
+      tags:
+      - authentication
+  /v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.User'
+      produces:
+      - application/json
+      responses:
         "400":
           description: Bad Request
         "404":

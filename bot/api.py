@@ -58,11 +58,11 @@ def register(message: types.Message, password: str, user: model.User) -> dict:
         response = requests.post(url, json=body)
         json = response.json()
 
-        if response.status_code == 200:
+        if response.status_code == 200 or response.status_code == 201:
             user.token = json['access_token']
 
         result = f'🎉 Sign up successfully with username: {user.username}' \
-            if response.status_code == 200 else '😢 ' + json['message']
+            if response.status_code == 200 or response.status_code == 201 else '😢 ' + json['message']
     except requests.exceptions.RequestException as e:
         result = "Connection error"
 

@@ -1,23 +1,25 @@
 package controller
 
 import (
-	"backend-go/internal/core/domain"
+	"backend-go/internal/core/domain/entity"
 	"backend-go/internal/core/service"
-	"context"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	passwordValidator "github.com/go-passwd/validator"
+	structValidator "github.com/go-playground/validator/v10"
 	"net/http"
 )
 
-var ctx = context.Background()
-
 type UserController struct {
-	userService *service.UserService
+	structValidator   *structValidator.Validate
+	passwordValidator *passwordValidator.Validator
+	userService       *service.UserService
 }
 
-func NewUserController(userService *service.UserService) *UserController {
+func NewUserController(structValidator *structValidator.Validate, passwordValidator *passwordValidator.Validator, userService *service.UserService) *UserController {
 	return &UserController{
-		userService: userService,
+		structValidator:   structValidator,
+		passwordValidator: passwordValidator,
+		userService:       userService,
 	}
 }
 
@@ -27,30 +29,67 @@ func NewUserController(userService *service.UserService) *UserController {
 // @Tags         authentication
 // @Accept       json
 // @Produce      json
-// @Param		 register body domain.User true	"Register user"
-// @Create       201
+// @Param		 request body domain.User true "request body"
+// @Created      201
 // @Failure      400
 // @Failure      404
 // @Failure      500
-// @Router       /auth/register [post]
-func (u *UserController) Register(ctxGin *gin.Context) {
-	var req = domain.User{}
+// @Router       /v1/auth/register [post]
+func (c *UserController) Register(ctxGin *gin.Context) {
+	var req = entity.User{}
 
 	if err := ctxGin.Bind(&req); err != nil {
-		domain.Response(ctxGin, http.StatusUnprocessableEntity, 422, nil, err.Error())
+		ctxGin.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		return
+	}
+	if err := c.structValidator.Struct(req); err != nil {
+		ctxGin.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
 		return
 	}
 
-	req.Id = primitive.NewObjectID()
-	if err := u.userService.Register(ctx, req); err != nil {
-		domain.Response(ctxGin, http.StatusUnprocessableEntity, 422, nil, err.Error())
+	if err := c.passwordValidator.Validate(req.Password); err != nil {
+		ctxGin.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
-	res, err := u.userService.ReadUser(ctx, req.Id)
+	authResponse, err := c.userService.Register(req)
 	if err != nil {
-		domain.Response(ctxGin, http.StatusUnprocessableEntity, 422, nil, err.Error())
+		ctxGin.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
 		return
 	}
-	domain.Response(ctxGin, http.StatusCreated, 201, res, "Register ok")
+
+	ctxGin.JSON(http.StatusCreated, authResponse)
+}
+
+// Login godoc
+// @Summary      Login a user
+// @Description
+// @Tags         authentication
+// @Accept       json
+// @Produce      json
+// @Param		 request body domain.User true "request body"
+// @Created      201
+// @Failure      400
+// @Failure      404
+// @Failure      500
+// @Router       /v1/auth/login [post]
+func (c *UserController) Login(ctxGin *gin.Context) {
+	var req = entity.User{}
+
+	if err := ctxGin.Bind(&req); err != nil {
+		ctxGin.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		return
+	}
+	if err := c.structValidator.Struct(req); err != nil {
+		ctxGin.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		return
+	}
+
+	authResponse, err := c.userService.Login(req)
+	if err != nil {
+		ctxGin.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		return
+	}
+
+	ctxGin.JSON(http.StatusOK, authResponse)
 }
