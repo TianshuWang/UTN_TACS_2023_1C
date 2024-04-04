@@ -1,7 +1,7 @@
 package config
 
 import (
-	"backend-go/internal/controller"
+	"backend-go/internal/core/controller"
 	errors2 "backend-go/internal/core/domain/errors"
 	"backend-go/internal/core/service"
 	"backend-go/internal/repository"

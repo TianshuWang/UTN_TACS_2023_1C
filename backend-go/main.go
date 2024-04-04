@@ -3,7 +3,7 @@ package main
 import (
 	_ "backend-go/docs"
 	"backend-go/internal/config"
-	"backend-go/router"
+	"backend-go/internal/router"
 	"fmt"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"

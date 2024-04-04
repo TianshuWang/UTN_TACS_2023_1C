@@ -2,7 +2,7 @@ package router
 
 import (
 	"backend-go/internal/config"
-	"backend-go/internal/core/middleware"
+	"backend-go/internal/core/middleware/rate_limiter"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,8 +15,8 @@ func Init(init *config.Initialization) *gin.Engine {
 	{
 		auth := api.Group("/auth")
 		{
-			auth.POST("/register", init.UserController.Register)
-			auth.POST("/login", middleware.AuthMiddleware(init.UserService), init.UserController.Login)
+			auth.POST("/register", rate_limiter.RateLimiterMiddleware, init.UserController.Register)
+			auth.POST("/login", rate_limiter.RateLimiterMiddleware, init.UserController.Login)
 		}
 	}
 
