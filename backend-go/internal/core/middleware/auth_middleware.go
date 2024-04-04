@@ -1,18 +1,22 @@
 package middleware
 
 import (
+	"backend-go/internal/core/port"
 	"backend-go/internal/core/security"
-	"backend-go/internal/core/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
 )
 
-func AuthMiddleware(userService *service.UserService) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		tokenString := ctx.GetHeader("Authorization")
+const (
+	key    = "Authorization"
+	prefix = "Bearer"
+)
 
-		if tokenString == "" || !strings.HasPrefix(tokenString, "Bearer") {
+func AuthMiddleware(userService port.UserService) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		tokenString := ctx.GetHeader(key)
+		if tokenString == "" || !strings.HasPrefix(tokenString, prefix) {
 			ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
 			ctx.Abort()
 			return
@@ -26,7 +30,7 @@ func AuthMiddleware(userService *service.UserService) gin.HandlerFunc {
 			return
 		}
 		user, err := userService.FindByUsername(claims.Username)
-		if err == nil {
+		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
 			ctx.Abort()
 			return

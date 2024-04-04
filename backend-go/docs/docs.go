@@ -26,6 +26,11 @@ const docTemplate = `{
     "paths": {
         "/v1/auth/login": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -43,7 +48,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/domain.User"
+                            "$ref": "#/definitions/entity.User"
                         }
                     }
                 ],
@@ -79,7 +84,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/domain.User"
+                            "$ref": "#/definitions/entity.User"
                         }
                     }
                 ],
@@ -98,7 +103,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "domain.User": {
+        "entity.User": {
             "type": "object",
             "required": [
                 "password",
@@ -124,8 +129,11 @@ const docTemplate = `{
         }
     },
     "securityDefinitions": {
-        "BasicAuth": {
-            "type": "basic"
+        "Bearer": {
+            "description": "Description for what is this security definition being used",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     },
     "externalDocs": {

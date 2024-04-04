@@ -27,7 +27,10 @@ var port = os.Getenv("PORT")
 // @host      localhost:8080
 // @BasePath
 
-// @securityDefinitions.basic  BasicAuth
+//	@securityDefinitions.apikey	Bearer
+//	@in							header
+//	@name						Authorization
+//	@description				Description for what is this security definition being used
 
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/

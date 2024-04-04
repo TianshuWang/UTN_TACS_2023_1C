@@ -1,5 +1,5 @@
 definitions:
-  domain.User:
+  entity.User:
     properties:
       firstName:
         type: string
@@ -42,7 +42,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/domain.User'
+          $ref: '#/definitions/entity.User'
       produces:
       - application/json
       responses:
@@ -52,6 +52,8 @@ paths:
           description: Not Found
         "500":
           description: Internal Server Error
+      security:
+      - Bearer: []
       summary: Login a user
       tags:
       - authentication
@@ -65,7 +67,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/domain.User'
+          $ref: '#/definitions/entity.User'
       produces:
       - application/json
       responses:
@@ -79,6 +81,9 @@ paths:
       tags:
       - authentication
 securityDefinitions:
-  BasicAuth:
-    type: basic
+  Bearer:
+    description: Description for what is this security definition being used
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

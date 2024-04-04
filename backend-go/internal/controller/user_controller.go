@@ -29,7 +29,7 @@ func NewUserController(structValidator *structValidator.Validate, passwordValida
 // @Tags         authentication
 // @Accept       json
 // @Produce      json
-// @Param		 request body domain.User true "request body"
+// @Param		 request body entity.User true "request body"
 // @Created      201
 // @Failure      400
 // @Failure      404
@@ -39,11 +39,11 @@ func (c *UserController) Register(ctxGin *gin.Context) {
 	var req = entity.User{}
 
 	if err := ctxGin.Bind(&req); err != nil {
-		ctxGin.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		ctxGin.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 	if err := c.structValidator.Struct(req); err != nil {
-		ctxGin.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		ctxGin.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -54,7 +54,7 @@ func (c *UserController) Register(ctxGin *gin.Context) {
 
 	authResponse, err := c.userService.Register(req)
 	if err != nil {
-		ctxGin.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		ctxGin.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -67,7 +67,7 @@ func (c *UserController) Register(ctxGin *gin.Context) {
 // @Tags         authentication
 // @Accept       json
 // @Produce      json
-// @Param		 request body domain.User true "request body"
+// @Param		 request body entity.User true "request body"
 // @Created      201
 // @Failure      400
 // @Failure      404
@@ -77,17 +77,17 @@ func (c *UserController) Login(ctxGin *gin.Context) {
 	var req = entity.User{}
 
 	if err := ctxGin.Bind(&req); err != nil {
-		ctxGin.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		ctxGin.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 	if err := c.structValidator.Struct(req); err != nil {
-		ctxGin.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		ctxGin.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
 	authResponse, err := c.userService.Login(req)
 	if err != nil {
-		ctxGin.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		ctxGin.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
