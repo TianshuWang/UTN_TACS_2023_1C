@@ -6,9 +6,9 @@ import (
 )
 
 type EventOption struct {
-	Id           primitive.ObjectID `bson:"_id,omitempty"`
-	DateTime     time.Time          `bson:"date_time" validate:"required"`
-	VoteQuantity int64              `bson:"vote_quantity"`
-	UpdateTime   time.Time          `bson:"update_time"`
-	EventName    string             `bson:"event_name"`
+	Id           primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	DateTime     string             `json:"date_time,omitempty" bson:"date_time,omitempty" validate:"required"`
+	VoteQuantity int64              `json:"vote_quantity,omitempty" bson:"vote_quantity,omitempty"`
+	UpdateTime   time.Time          `json:"update_time,omitempty" bson:"update_time,omitempty"`
+	EventName    string             `json:"event_name,omitempty" bson:"event_name,omitempty"`
 }

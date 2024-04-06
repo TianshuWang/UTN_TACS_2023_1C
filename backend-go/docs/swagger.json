@@ -19,11 +19,6 @@
     "paths": {
         "/v1/auth/login": {
             "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -93,9 +88,85 @@
                     }
                 }
             }
+        },
+        "/v1/events": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Create an event",
+                "parameters": [
+                    {
+                        "description": "request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.Event"
+                        }
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "entity.Event": {
+            "type": "object",
+            "required": [
+                "eventOptions",
+                "name"
+            ],
+            "properties": {
+                "createDate": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "eventOptions": {
+                    "type": "array",
+                    "items": {}
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ownerUser": {
+                    "$ref": "#/definitions/entity.User"
+                },
+                "registeredUsers": {
+                    "type": "array",
+                    "items": {}
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "entity.User": {
             "type": "object",
             "required": [

@@ -35,5 +35,7 @@ func Init() *Initialization {
 	mongoRepo := repository.NewMongoRepository(mongoUri)
 	userService := service.NewUserService(mongoRepo, logger)
 	userController := controller.NewUserController(&sv, &pv, userService)
-	return &Initialization{mongoRepo, userService, userController}
+	eventService := service.NewEventService(mongoRepo, logger)
+	eventController := controller.NewEventController(&sv, eventService)
+	return &Initialization{mongoRepo, userService, userController, eventService, eventController}
 }

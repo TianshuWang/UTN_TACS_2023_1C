@@ -1,4 +1,28 @@
 definitions:
+  entity.Event:
+    properties:
+      createDate:
+        type: string
+      description:
+        type: string
+      eventOptions:
+        items: {}
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      ownerUser:
+        $ref: '#/definitions/entity.User'
+      registeredUsers:
+        items: {}
+        type: array
+      status:
+        type: string
+    required:
+    - eventOptions
+    - name
+    type: object
   entity.User:
     properties:
       firstName:
@@ -52,8 +76,6 @@ paths:
           description: Not Found
         "500":
           description: Internal Server Error
-      security:
-      - Bearer: []
       summary: Login a user
       tags:
       - authentication
@@ -80,6 +102,31 @@ paths:
       summary: Register a user
       tags:
       - authentication
+  /v1/events:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/entity.Event'
+      produces:
+      - application/json
+      responses:
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: Create an event
+      tags:
+      - events
 securityDefinitions:
   Bearer:
     description: Description for what is this security definition being used
