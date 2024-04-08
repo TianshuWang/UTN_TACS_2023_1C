@@ -1,21 +1,34 @@
 definitions:
+  entity.AuthResponse:
+    properties:
+      access_token:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      username:
+        type: string
+    type: object
   entity.Event:
     properties:
-      createDate:
+      create_date:
         type: string
       description:
         type: string
       eventOptions:
-        items: {}
+        items:
+          $ref: '#/definitions/entity.EventOption'
         type: array
       id:
         type: string
       name:
         type: string
-      ownerUser:
+      owner_user:
         $ref: '#/definitions/entity.User'
-      registeredUsers:
-        items: {}
+      registered_users:
+        items:
+          $ref: '#/definitions/entity.User'
         type: array
       status:
         type: string
@@ -23,13 +36,28 @@ definitions:
     - eventOptions
     - name
     type: object
-  entity.User:
+  entity.EventOption:
     properties:
-      firstName:
+      date_time:
+        type: string
+      event_name:
         type: string
       id:
         type: string
-      lastName:
+      update_time:
+        type: string
+      vote_quantity:
+        type: integer
+    required:
+    - date_time
+    type: object
+  entity.User:
+    properties:
+      first_name:
+        type: string
+      id:
+        type: string
+      last_name:
         type: string
       password:
         type: string
@@ -70,6 +98,10 @@ paths:
       produces:
       - application/json
       responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.AuthResponse'
         "400":
           description: Bad Request
         "404":
@@ -93,6 +125,8 @@ paths:
       produces:
       - application/json
       responses:
+        "201":
+          description: Created
         "400":
           description: Bad Request
         "404":
@@ -103,6 +137,29 @@ paths:
       tags:
       - authentication
   /v1/events:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.Event'
+            type: array
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: Get all events
+      tags:
+      - events
     post:
       consumes:
       - application/json
@@ -116,6 +173,10 @@ paths:
       produces:
       - application/json
       responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Event'
         "400":
           description: Bad Request
         "404":
@@ -125,6 +186,62 @@ paths:
       security:
       - Bearer: []
       summary: Create an event
+      tags:
+      - events
+  /v1/events/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: event id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Event'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: Get event by id
+      tags:
+      - events
+  /v1/events/{id}/user:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: event id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Event'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: Register a user to event
       tags:
       - events
 securityDefinitions:

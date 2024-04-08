@@ -3,7 +3,6 @@ package router
 import (
 	"backend-go/internal/config"
 	"backend-go/internal/core/middleware"
-	"backend-go/internal/core/middleware/rate_limiter"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,12 +15,15 @@ func Init(init *config.Initialization) *gin.Engine {
 	{
 		auth := api.Group("/auth")
 		{
-			auth.POST("/register", rate_limiter.RateLimiterMiddleware, init.UserController.Register)
-			auth.POST("/login", rate_limiter.RateLimiterMiddleware, init.UserController.Login)
+			auth.POST("/register", middleware.RateLimiterMiddleware(init.TokenBucketService), init.UserController.Register)
+			auth.POST("/login", middleware.RateLimiterMiddleware(init.TokenBucketService), init.UserController.Login)
 		}
 		events := api.Group("/events")
 		{
-			events.POST("", rate_limiter.RateLimiterMiddleware, middleware.AuthMiddleware(init.UserService), init.EventController.CreateEvent)
+			events.POST("", middleware.RateLimiterMiddleware(init.TokenBucketService), middleware.AuthMiddleware(init.UserService), init.EventController.CreateEvent)
+			events.GET("", middleware.RateLimiterMiddleware(init.TokenBucketService), middleware.AuthMiddleware(init.UserService), init.EventController.GetAllEvents)
+			events.GET("/:id", middleware.RateLimiterMiddleware(init.TokenBucketService), middleware.AuthMiddleware(init.UserService), init.EventController.GetEventById)
+			events.PATCH("/:id/user", middleware.RateLimiterMiddleware(init.TokenBucketService), middleware.AuthMiddleware(init.UserService), init.EventController.RegisterEvent)
 		}
 	}
 

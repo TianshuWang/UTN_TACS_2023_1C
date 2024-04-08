@@ -30,13 +30,12 @@ func AuthMiddleware(userService port.UserService) gin.HandlerFunc {
 			return
 		}
 		user, err := userService.FindByUsername(claims.Username)
-		user.Password = ""
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
 			ctx.Abort()
 			return
 		}
-
+		user.Password = ""
 		ctx.Set("user", user)
 		ctx.Next()
 	}

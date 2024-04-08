@@ -48,6 +48,12 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.AuthResponse"
+                        }
+                    },
                     "400": {
                         "description": "Bad Request"
                     },
@@ -84,6 +90,9 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
                     "400": {
                         "description": "Bad Request"
                     },
@@ -97,6 +106,43 @@ const docTemplate = `{
             }
         },
         "/v1/events": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Get all events",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.Event"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -125,6 +171,102 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.Event"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/v1/events/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Get event by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "event id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.Event"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/v1/events/{id}/user": {
+            "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Register a user to event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "event id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.Event"
+                        }
+                    },
                     "400": {
                         "description": "Bad Request"
                     },
@@ -139,6 +281,23 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "entity.AuthResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "entity.Event": {
             "type": "object",
             "required": [
@@ -146,7 +305,7 @@ const docTemplate = `{
                 "name"
             ],
             "properties": {
-                "createDate": {
+                "create_date": {
                     "type": "string"
                 },
                 "description": {
@@ -154,7 +313,9 @@ const docTemplate = `{
                 },
                 "eventOptions": {
                     "type": "array",
-                    "items": {}
+                    "items": {
+                        "$ref": "#/definitions/entity.EventOption"
+                    }
                 },
                 "id": {
                     "type": "string"
@@ -162,15 +323,40 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "ownerUser": {
+                "owner_user": {
                     "$ref": "#/definitions/entity.User"
                 },
-                "registeredUsers": {
+                "registered_users": {
                     "type": "array",
-                    "items": {}
+                    "items": {
+                        "$ref": "#/definitions/entity.User"
+                    }
                 },
                 "status": {
                     "type": "string"
+                }
+            }
+        },
+        "entity.EventOption": {
+            "type": "object",
+            "required": [
+                "date_time"
+            ],
+            "properties": {
+                "date_time": {
+                    "type": "string"
+                },
+                "event_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "update_time": {
+                    "type": "string"
+                },
+                "vote_quantity": {
+                    "type": "integer"
                 }
             }
         },
@@ -181,13 +367,13 @@ const docTemplate = `{
                 "username"
             ],
             "properties": {
-                "firstName": {
+                "first_name": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "lastName": {
+                "last_name": {
                     "type": "string"
                 },
                 "password": {

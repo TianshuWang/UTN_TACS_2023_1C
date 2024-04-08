@@ -30,7 +30,7 @@ func NewUserController(structValidator *structValidator.Validate, passwordValida
 // @Accept       json
 // @Produce      json
 // @Param		 request body entity.User true "request body"
-// @Created      201
+// @Success      201
 // @Failure      400
 // @Failure      404
 // @Failure      500
@@ -68,18 +68,18 @@ func (c *UserController) Register(ctxGin *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param		 request body entity.User true "request body"
-// @Created      201
+// @Success      200 {object} entity.AuthResponse
 // @Failure      400
 // @Failure      404
 // @Failure      500
 // @Router       /v1/auth/login [post]
 func (c *UserController) Login(ctxGin *gin.Context) {
 	var req = entity.User{}
-
 	if err := ctxGin.Bind(&req); err != nil {
 		ctxGin.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
+
 	if err := c.structValidator.Struct(req); err != nil {
 		ctxGin.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return

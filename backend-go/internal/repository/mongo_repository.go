@@ -64,6 +64,19 @@ func (m *MongoRepository) Find(collectionName string, filter interface{}, result
 	return nil
 }
 
+func (m *MongoRepository) FindAll(collectionName string, filter interface{}, results interface{}) (interface{}, error) {
+	collection := m.MongoDb.Collection(collectionName)
+	cur, err := collection.Find(ctx, filter)
+
+	if err != nil {
+		return nil, err
+	}
+	if err = cur.All(context.TODO(), &results); err != nil {
+		return nil, err
+	}
+	return results, nil
+}
+
 func (m *MongoRepository) Update(collectionName string, filter interface{}, update interface{}) error {
 	collection := m.MongoDb.Collection(collectionName)
 

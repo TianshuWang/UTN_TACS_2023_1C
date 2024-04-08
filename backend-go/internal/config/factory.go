@@ -19,9 +19,10 @@ const (
 )
 
 var (
-	mongoUri = os.Getenv("MONGODB_URI")
-	sv       = *structValidator.New()
-	pv       = *passwordValidator.New(
+	mongoUri     = os.Getenv("MONGODB_URI")
+	redisAddress = os.Getenv("REDIS_ADDRESS")
+	sv           = *structValidator.New()
+	pv           = *passwordValidator.New(
 		passwordValidator.CommonPassword(nil),
 		passwordValidator.ContainsAtLeast(charsUppercase, 1, errors2.ErrPasswordUppercase),
 		passwordValidator.ContainsAtLeast(charsLowercase, 1, errors2.ErrPasswordLowercase),
@@ -33,9 +34,18 @@ var (
 func Init() *Initialization {
 	logger := log.New()
 	mongoRepo := repository.NewMongoRepository(mongoUri)
+	redisRepo := repository.NewRedisRepository(redisAddress)
+	tokenBucketService := service.NewTokenBucketService(redisRepo)
 	userService := service.NewUserService(mongoRepo, logger)
 	userController := controller.NewUserController(&sv, &pv, userService)
 	eventService := service.NewEventService(mongoRepo, logger)
 	eventController := controller.NewEventController(&sv, eventService)
-	return &Initialization{mongoRepo, userService, userController, eventService, eventController}
+	return &Initialization{
+		mongoRepo,
+		redisRepo,
+		tokenBucketService,
+		userService,
+		userController,
+		eventService,
+		eventController}
 }
