@@ -12,6 +12,12 @@
 - Obtener el access token
 - Ingresar el access token en [Authorize]
 
+## Backend-Go
+- Swagger: http://localhost:8080/swagger/index.html#/
+- Registrar un nuevo usuario (si no existe, si ya existe, con el usuario y password hacer Authentication)
+- Obtener el access token
+- Ingresar el access token en [Authorize]
+
 ## Frontend
 - http://localhost:3000
 

@@ -1,4 +1,4 @@
-package port
+package service
 
 import (
 	"backend-go/internal/core/domain/entity"

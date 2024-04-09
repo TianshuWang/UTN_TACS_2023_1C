@@ -27,20 +27,20 @@ func NewRedisRepository(address string) *RedisRepository {
 
 func getClient(address string) *redis.Client {
 	return redis.NewClient(&redis.Options{
-		Addr:     address, // Redis server address
-		Password: "",      // Password (if used)
-		DB:       0,       // Database number
+		Addr:     address,
+		Password: "",
+		DB:       0,
 	})
 }
 
-func (r *RedisRepository) SetKeyValue(key string, value map[string]interface{}) error {
+func (r *RedisRepository) SetHMSet(key string, value map[string]interface{}) error {
 	if err := r.RedisClient.HMSet(key, value).Err(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *RedisRepository) GetValue(key string) (map[string]string, error) {
+func (r *RedisRepository) GetHMSetAll(key string) (map[string]string, error) {
 	val, err := r.RedisClient.HGetAll(key).Result()
 	switch {
 	case errors.Is(err, redis.Nil), val == nil, len(val) == 0:
@@ -49,11 +49,4 @@ func (r *RedisRepository) GetValue(key string) (map[string]string, error) {
 		return nil, err
 	}
 	return val, nil
-}
-
-func (r *RedisRepository) DeleteValue(key string) error {
-	if err := r.RedisClient.Del(key).Err(); err != nil {
-		return err
-	}
-	return nil
 }

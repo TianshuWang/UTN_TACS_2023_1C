@@ -1,4 +1,4 @@
-package port
+package repository
 
 type MongoRepository interface {
 	Create(collectionName string, model interface{}) error

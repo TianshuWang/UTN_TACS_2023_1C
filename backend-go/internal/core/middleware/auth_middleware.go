@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"backend-go/internal/core/port"
+	"backend-go/internal/core/port/service"
 	"backend-go/internal/core/security"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -13,7 +13,7 @@ const (
 	prefix = "Bearer"
 )
 
-func AuthMiddleware(userService port.UserService) gin.HandlerFunc {
+func AuthMiddleware(userService service.UserService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		tokenString := ctx.GetHeader(key)
 		if tokenString == "" || !strings.HasPrefix(tokenString, prefix) {
