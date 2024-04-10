@@ -7,4 +7,6 @@ type EventController interface {
 	GetAllEvents(ctxGin *gin.Context)
 	GetEventById(ctxGin *gin.Context)
 	RegisterEvent(ctxGin *gin.Context)
+	ChangeEventStatus(ctxGin *gin.Context)
+	VoteEventOption(ctxGin *gin.Context)
 }

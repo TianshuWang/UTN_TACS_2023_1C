@@ -78,7 +78,7 @@ func (s *EventService) GetEventById(id primitive.ObjectID) (*entity.Event, error
 func (s *EventService) RegisterEvent(id primitive.ObjectID, user entity.User) (*entity.Event, error) {
 	var event entity.Event
 	if err := s.repository.Find(Events, bson.M{"_id": id}, &event); err != nil {
-		return nil, err
+		return nil, errors2.ErrEventNotExists
 	}
 
 	if slices.Contains(event.RegisteredUsers, user) {
@@ -92,12 +92,51 @@ func (s *EventService) RegisterEvent(id primitive.ObjectID, user entity.User) (*
 	return &event, nil
 }
 
+func (s *EventService) ChangeEventStatus(id primitive.ObjectID, status string) (*entity.Event, error) {
+	var event entity.Event
+	if err := s.repository.Find(Events, bson.M{"_id": id}, &event); err != nil {
+		return nil, errors2.ErrEventNotExists
+	}
+
+	event.Status = status
+	if err := s.repository.Update(Events, bson.M{"_id": event.Id}, bson.M{"$set": event}); err != nil {
+		return nil, err
+	}
+	return &event, nil
+}
+
+func (s *EventService) VoteEventOption(eventId primitive.ObjectID, eventOptionId primitive.ObjectID) (*entity.Event, error) {
+	var event entity.Event
+	if err := s.repository.Find(Events, bson.M{"_id": eventId}, &event); err != nil {
+		return nil, errors2.ErrEventNotExists
+	}
+	var eventOption entity.EventOption
+	if err := s.repository.Find(EventOptions, bson.M{"_id": eventOptionId}, &eventOption); err != nil {
+		return nil, errors2.ErrEventOptionNotExists
+	}
+
+	if event.Status == constant.VoteClosed {
+		return nil, errors2.ErrEventVoteClosed
+	}
+
+	eventOption.VoteQuantity += 1
+	eventOption.UpdateTime = time.Now()
+	if err := s.repository.Update(EventOptions, bson.M{"_id": eventOption.Id}, bson.M{"$set": eventOption}); err != nil {
+		return nil, err
+	}
+	if err := s.repository.Find(Events, bson.M{"_id": event.Id}, &event); err != nil {
+		return nil, errors2.ErrEventNotExists
+	}
+	return &event, nil
+}
+
 func (s *EventService) saveEventOptions(event entity.Event) ([]entity.EventOption, error) {
 	ops := make([]entity.EventOption, len(event.EventOptions))
 	for i, option := range event.EventOptions {
 		option.Id = primitive.NewObjectID()
 		option.EventName = event.Name
 		option.UpdateTime = time.Now()
+		option.VoteQuantity = 0
 
 		if err := s.repository.Create(EventOptions, option); err != nil {
 			return nil, err

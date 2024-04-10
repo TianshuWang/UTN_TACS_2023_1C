@@ -24,6 +24,8 @@ func Init(init *config.Initialization) *gin.Engine {
 			events.GET("", middleware.RateLimiterMiddleware(init.TokenBucketService), middleware.AuthMiddleware(init.UserService), init.EventController.GetAllEvents)
 			events.GET("/:id", middleware.RateLimiterMiddleware(init.TokenBucketService), middleware.AuthMiddleware(init.UserService), init.EventController.GetEventById)
 			events.PATCH("/:id/user", middleware.RateLimiterMiddleware(init.TokenBucketService), middleware.AuthMiddleware(init.UserService), init.EventController.RegisterEvent)
+			events.PATCH("/:id", middleware.RateLimiterMiddleware(init.TokenBucketService), middleware.AuthMiddleware(init.UserService), init.EventController.ChangeEventStatus)
+			events.PATCH("/vote/:event_id/options/:option_id", middleware.RateLimiterMiddleware(init.TokenBucketService), middleware.AuthMiddleware(init.UserService), init.EventController.VoteEventOption)
 		}
 	}
 

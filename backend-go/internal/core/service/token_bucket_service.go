@@ -80,19 +80,6 @@ func (s *TokenBucketService) refill(tb *rate_limiter.TokenBucket) {
 	tb.LastRefillTimestamp = now
 }
 
-func (s *TokenBucketService) setTokenBucket(identifier string, tb *rate_limiter.TokenBucket) {
-	m := map[string]interface{}{
-		"Rate":                tb.Rate,
-		"MaxTokens":           tb.MaxTokens,
-		"CurrentTokens":       tb.CurrentTokens,
-		"LastRefillTimestamp": tb.LastRefillTimestamp.Format(layoutTimezone),
-	}
-
-	if err := s.repository.SetHMSet(identifier, m); err != nil {
-		log.Fatal(err.Error())
-	}
-}
-
 func (s *TokenBucketService) initTokenBucket(identifier string, userType string) {
 	tb := &rate_limiter.TokenBucket{
 		Rate:                rulesMap[userType].Rate,
@@ -105,4 +92,17 @@ func (s *TokenBucketService) initTokenBucket(identifier string, userType string)
 
 func (s *TokenBucketService) updateTokenBucket(tb *rate_limiter.TokenBucket) {
 	s.setTokenBucket(tb.Identifier, tb)
+}
+
+func (s *TokenBucketService) setTokenBucket(identifier string, tb *rate_limiter.TokenBucket) {
+	m := map[string]interface{}{
+		"Rate":                tb.Rate,
+		"MaxTokens":           tb.MaxTokens,
+		"CurrentTokens":       tb.CurrentTokens,
+		"LastRefillTimestamp": tb.LastRefillTimestamp.Format(layoutTimezone),
+	}
+
+	if err := s.repository.SetHMSet(identifier, m); err != nil {
+		log.Fatal(err.Error())
+	}
 }
