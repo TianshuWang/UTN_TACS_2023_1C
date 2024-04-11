@@ -1,0 +1,14 @@
+bot:
+  username: ${USERNAME}
+  token: ${TOKEN}
+
+server:
+    port: 8443
+
+backend:
+  baseUrl: ${BASE_URL}
+
+
+#USERNAME: tacs_telegram_bot
+#TOKEN: 5803459495:AAECMPcsjkrwLWSCbVFFw9umglY3WWbBmGI
+#BASE_URL: http://localhost:8091/
