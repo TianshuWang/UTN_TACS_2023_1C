@@ -110,21 +110,37 @@ func (s *EventService) VoteEventOption(eventId primitive.ObjectID, eventOptionId
 	if err := s.repository.Find(Events, bson.M{"_id": eventId}, &event); err != nil {
 		return nil, errors2.ErrEventNotExists
 	}
+	if event.Status == constant.VoteClosed {
+		return nil, errors2.ErrEventVoteClosed
+	}
 	var eventOption entity.EventOption
 	if err := s.repository.Find(EventOptions, bson.M{"_id": eventOptionId}, &eventOption); err != nil {
 		return nil, errors2.ErrEventOptionNotExists
 	}
-
-	if event.Status == constant.VoteClosed {
-		return nil, errors2.ErrEventVoteClosed
+	if !slices.Contains(event.EventOptions, eventOption) {
+		return nil, errors2.ErrEventOptionNotBelongsToEvent
 	}
-
 	eventOption.VoteQuantity += 1
 	eventOption.UpdateTime = time.Now()
-	if err := s.repository.Update(EventOptions, bson.M{"_id": eventOption.Id}, bson.M{"$set": eventOption}); err != nil {
+	if err := s.repository.Update(EventOptions, bson.M{"_id": eventOptionId}, bson.M{"$set": eventOption}); err != nil {
 		return nil, err
 	}
-	if err := s.repository.Find(Events, bson.M{"_id": event.Id}, &event); err != nil {
+
+	var optionUpdated entity.EventOption
+	if err := s.repository.Find(EventOptions, bson.M{"_id": eventOptionId}, &optionUpdated); err != nil {
+		return nil, errors2.ErrEventOptionNotExists
+	}
+
+	for i, op := range event.EventOptions {
+		if op.Id == eventOptionId {
+			event.EventOptions[i] = optionUpdated
+		}
+		break
+	}
+	if err := s.repository.Update(Events, bson.M{"_id": eventId}, bson.M{"$set": event}); err != nil {
+		return nil, err
+	}
+	if err := s.repository.Find(Events, bson.M{"_id": eventId}, &event); err != nil {
 		return nil, errors2.ErrEventNotExists
 	}
 	return &event, nil
@@ -141,10 +157,7 @@ func (s *EventService) saveEventOptions(event entity.Event) ([]entity.EventOptio
 		if err := s.repository.Create(EventOptions, option); err != nil {
 			return nil, err
 		}
-
-		if err := s.repository.Find(EventOptions, bson.M{"_id": option.Id}, &ops[i]); err != nil {
-			return nil, err
-		}
+		ops[i] = option
 	}
 	return ops, nil
 }
