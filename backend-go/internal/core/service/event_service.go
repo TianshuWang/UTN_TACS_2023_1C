@@ -14,8 +14,7 @@ import (
 )
 
 const (
-	Events       = "Events"
-	EventOptions = "event_options"
+	Events = "Events"
 )
 
 type EventService struct {
@@ -31,26 +30,17 @@ func NewEventService(repository *repository.MongoRepository, logger *log.Logger)
 }
 
 func (s *EventService) CreateEvent(event entity.Event, user entity.User) (*entity.Event, error) {
-	ops, err := s.saveEventOptions(event)
-	if err != nil {
-		return nil, err
-	}
-
 	event.Id = primitive.NewObjectID()
 	event.Status = constant.VotePending
 	event.CreateDate = time.Now()
 	event.OwnerUser = user
-	event.EventOptions = ops
+	event.EventOptions = s.getEventOptions(event)
 	event.RegisteredUsers = []entity.User{}
 	if err := s.repository.Create(Events, event); err != nil {
 		return nil, err
 	}
 
-	var savedEvent entity.Event
-	if err := s.repository.Find(Events, bson.M{"_id": event.Id}, &savedEvent); err != nil {
-		return nil, err
-	}
-	return &savedEvent, nil
+	return &event, nil
 }
 
 func (s *EventService) GetAllEvents() ([]entity.Event, error) {
@@ -113,51 +103,45 @@ func (s *EventService) VoteEventOption(eventId primitive.ObjectID, eventOptionId
 	if event.Status == constant.VoteClosed {
 		return nil, errors2.ErrEventVoteClosed
 	}
-	var eventOption entity.EventOption
-	if err := s.repository.Find(EventOptions, bson.M{"_id": eventOptionId}, &eventOption); err != nil {
-		return nil, errors2.ErrEventOptionNotExists
-	}
-	if !slices.Contains(event.EventOptions, eventOption) {
-		return nil, errors2.ErrEventOptionNotBelongsToEvent
-	}
-	eventOption.VoteQuantity += 1
-	eventOption.UpdateTime = time.Now()
-	if err := s.repository.Update(EventOptions, bson.M{"_id": eventOptionId}, bson.M{"$set": eventOption}); err != nil {
-		return nil, err
-	}
 
-	var optionUpdated entity.EventOption
-	if err := s.repository.Find(EventOptions, bson.M{"_id": eventOptionId}, &optionUpdated); err != nil {
-		return nil, errors2.ErrEventOptionNotExists
+	eventOption, err := s.findEventOptionById(eventOptionId, event.EventOptions)
+	if err != nil {
+		return nil, err
 	}
 
 	for i, op := range event.EventOptions {
 		if op.Id == eventOptionId {
-			event.EventOptions[i] = optionUpdated
+			event.EventOptions[i] = eventOption
 		}
 		break
 	}
 	if err := s.repository.Update(Events, bson.M{"_id": eventId}, bson.M{"$set": event}); err != nil {
 		return nil, err
 	}
-	if err := s.repository.Find(Events, bson.M{"_id": eventId}, &event); err != nil {
-		return nil, errors2.ErrEventNotExists
-	}
 	return &event, nil
 }
 
-func (s *EventService) saveEventOptions(event entity.Event) ([]entity.EventOption, error) {
+func (s *EventService) getEventOptions(event entity.Event) []entity.EventOption {
 	ops := make([]entity.EventOption, len(event.EventOptions))
 	for i, option := range event.EventOptions {
-		option.Id = primitive.NewObjectID()
-		option.EventName = event.Name
-		option.UpdateTime = time.Now()
-		option.VoteQuantity = 0
-
-		if err := s.repository.Create(EventOptions, option); err != nil {
-			return nil, err
+		ops[i] = entity.EventOption{
+			Id:           primitive.NewObjectID(),
+			EventName:    event.Name,
+			DateTime:     option.DateTime,
+			UpdateTime:   time.Now(),
+			VoteQuantity: 0,
 		}
-		ops[i] = option
 	}
-	return ops, nil
+	return ops
+}
+
+func (s *EventService) findEventOptionById(eventOptionId primitive.ObjectID, options []entity.EventOption) (entity.EventOption, error) {
+	index := slices.IndexFunc(options, func(op entity.EventOption) bool { return op.Id == eventOptionId })
+	if index == -1 || &options[index] == nil {
+		return entity.EventOption{}, errors2.ErrEventOptionNotBelongsToEvent
+	}
+	eventOption := options[index]
+	eventOption.VoteQuantity++
+	eventOption.UpdateTime = time.Now()
+	return eventOption, nil
 }
