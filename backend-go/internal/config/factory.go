@@ -6,7 +6,6 @@ import (
 	"backend-go/internal/core/service"
 	"backend-go/internal/repository"
 	passwordValidator "github.com/go-passwd/validator"
-	structValidator "github.com/go-playground/validator/v10"
 	log "github.com/sirupsen/logrus"
 	"os"
 )
@@ -21,7 +20,6 @@ const (
 var (
 	mongoUri     = os.Getenv("MONGODB_URI")
 	redisAddress = os.Getenv("REDIS_ADDRESS")
-	sv           = *structValidator.New()
 	pv           = *passwordValidator.New(
 		passwordValidator.CommonPassword(nil),
 		passwordValidator.ContainsAtLeast(charsUppercase, 1, errors2.ErrPasswordUppercase),
@@ -37,9 +35,9 @@ func Init() *Initialization {
 	redisRepo := repository.NewRedisRepository(redisAddress)
 	tokenBucketService := service.NewTokenBucketService(redisRepo)
 	userService := service.NewUserService(mongoRepo, logger)
-	userController := controller.NewUserController(&sv, &pv, userService)
+	userController := controller.NewUserController(&pv, userService)
 	eventService := service.NewEventService(mongoRepo, logger)
-	eventController := controller.NewEventController(&sv, eventService)
+	eventController := controller.NewEventController(eventService)
 	return &Initialization{
 		mongoRepo,
 		redisRepo,

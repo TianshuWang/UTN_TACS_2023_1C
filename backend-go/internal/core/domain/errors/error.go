@@ -13,6 +13,7 @@ var (
 	ErrUserAlreadyRegistered        = New("use already registered to the event")
 	ErrEventVoteClosed              = New("the event's vote has already closed, no more allowed to vote the event")
 	ErrEventOptionNotBelongsToEvent = New("event option not belongs to event")
+	ErrUserNotAllowToChangeEvent    = New("user is not allowed to change the status of event")
 )
 
 type Err interface {

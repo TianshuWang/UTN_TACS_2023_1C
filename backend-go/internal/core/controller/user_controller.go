@@ -5,19 +5,16 @@ import (
 	"backend-go/internal/core/service"
 	"github.com/gin-gonic/gin"
 	passwordValidator "github.com/go-passwd/validator"
-	structValidator "github.com/go-playground/validator/v10"
 	"net/http"
 )
 
 type UserController struct {
-	structValidator   *structValidator.Validate
 	passwordValidator *passwordValidator.Validator
 	userService       *service.UserService
 }
 
-func NewUserController(structValidator *structValidator.Validate, passwordValidator *passwordValidator.Validator, userService *service.UserService) *UserController {
+func NewUserController(passwordValidator *passwordValidator.Validator, userService *service.UserService) *UserController {
 	return &UserController{
-		structValidator:   structValidator,
 		passwordValidator: passwordValidator,
 		userService:       userService,
 	}
@@ -38,11 +35,7 @@ func NewUserController(structValidator *structValidator.Validate, passwordValida
 func (c *UserController) Register(ctxGin *gin.Context) {
 	var req = entity.User{}
 
-	if err := ctxGin.Bind(&req); err != nil {
-		ctxGin.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-		return
-	}
-	if err := c.structValidator.Struct(req); err != nil {
+	if err := ctxGin.ShouldBindJSON(&req); err != nil {
 		ctxGin.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
@@ -75,12 +68,7 @@ func (c *UserController) Register(ctxGin *gin.Context) {
 // @Router       /v1/auth/login [post]
 func (c *UserController) Login(ctxGin *gin.Context) {
 	var req = entity.User{}
-	if err := ctxGin.Bind(&req); err != nil {
-		ctxGin.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-		return
-	}
-
-	if err := c.structValidator.Struct(req); err != nil {
+	if err := ctxGin.ShouldBindJSON(&req); err != nil {
 		ctxGin.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}

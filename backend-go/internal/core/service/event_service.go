@@ -82,12 +82,16 @@ func (s *EventService) RegisterEvent(id primitive.ObjectID, user entity.User) (*
 	return &event, nil
 }
 
-func (s *EventService) ChangeEventStatus(id primitive.ObjectID, status string) (*entity.Event, error) {
+func (s *EventService) ChangeEventStatus(id primitive.ObjectID, user entity.User, status string) (*entity.Event, error) {
 	var event entity.Event
 	if err := s.repository.Find(Events, bson.M{"_id": id}, &event); err != nil {
 		return nil, errors2.ErrEventNotExists
 	}
 
+	eventUser := event.OwnerUser
+	if eventUser != user {
+		return nil, errors2.ErrUserNotAllowToChangeEvent
+	}
 	event.Status = status
 	if err := s.repository.Update(Events, bson.M{"_id": event.Id}, bson.M{"$set": event}); err != nil {
 		return nil, err

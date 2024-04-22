@@ -5,21 +5,18 @@ import (
 	"backend-go/internal/core/service"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	structValidator "github.com/go-playground/validator/v10"
 	"github.com/mitchellh/mapstructure"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )
 
 type EventController struct {
-	eventService    *service.EventService
-	structValidator *structValidator.Validate
+	eventService *service.EventService
 }
 
-func NewEventController(structValidator *structValidator.Validate, eventService *service.EventService) *EventController {
+func NewEventController(eventService *service.EventService) *EventController {
 	return &EventController{
-		structValidator: structValidator,
-		eventService:    eventService,
+		eventService: eventService,
 	}
 }
 
@@ -39,11 +36,7 @@ func NewEventController(structValidator *structValidator.Validate, eventService 
 func (c *EventController) CreateEvent(ctxGin *gin.Context) {
 	var req = entity.Event{}
 
-	if err := ctxGin.Bind(&req); err != nil {
-		ctxGin.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-		return
-	}
-	if err := c.structValidator.StructExcept(req, "OwnerUser.Username", "OwnerUser.Password"); err != nil {
+	if err := ctxGin.ShouldBindJSON(&req); err != nil {
 		ctxGin.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
@@ -165,7 +158,9 @@ func (c *EventController) ChangeEventStatus(ctxGin *gin.Context) {
 		return
 	}
 	status := ctxGin.Query("status")
-	event, err := c.eventService.ChangeEventStatus(objectId, status)
+	var currentUser entity.User
+	getCurrentUser(ctxGin, &currentUser)
+	event, err := c.eventService.ChangeEventStatus(objectId, currentUser, status)
 	if err != nil {
 		ctxGin.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
